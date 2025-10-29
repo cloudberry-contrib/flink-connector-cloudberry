@@ -1,0 +1,5 @@
+# Flink Table Factory Service Provider
+# This file registers the Cloudberry table factory with Flink's Table API
+# Add your factory class here when implemented:
+# org.apache.flink.connector.cloudberry.table.CloudberryDynamicTableFactory
+

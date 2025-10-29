@@ -1,0 +1,338 @@
+/*
+ * Build configuration for Apache Flink Cloudberry Connector
+ */
+
+plugins {
+    id 'java'
+    id 'scala'
+    id 'maven-publish'
+    id 'checkstyle'
+    id 'com.github.spotbugs' version '6.0.7'
+    id 'com.diffplug.spotless' version '6.13.0'  // Last version supporting Java 8
+}
+
+group = 'org.apache.flink'
+
+// Java version configuration
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    // ============================================
+    // Core Flink dependencies (provided scope)
+    // ============================================
+    compileOnly "org.apache.flink:flink-connector-base:${flinkVersion}"
+    compileOnly "org.apache.flink:flink-streaming-java:${flinkVersion}"
+
+    // Table ecosystem (provided, optional)
+    compileOnly "org.apache.flink:flink-table-api-java-bridge:${flinkVersion}"
+    compileOnly "org.apache.flink:flink-table-common:${flinkVersion}"
+
+    // Scala library (provided)
+    compileOnly "org.scala-lang:scala-library:${scalaBinaryVersion}"
+
+    // ============================================
+    // PostgreSQL JDBC driver (optional, provided by user)
+    // ============================================
+    // Users need to provide the PostgreSQL driver in their application
+    // This follows the same pattern as flink-connector-mongodb
+    compileOnly "org.postgresql:postgresql:${postgresqlVersion}"
+
+    // ============================================
+    // Logging API (provided)
+    // ============================================
+    compileOnly "org.slf4j:slf4j-api:${slf4jVersion}"
+
+    // ============================================
+    // Annotations (provided)
+    // ============================================
+    compileOnly "com.google.code.findbugs:jsr305:${jsr305Version}"
+
+    // ============================================
+    // Test dependencies
+    // ============================================
+
+    // JUnit 5
+    testImplementation platform("org.junit:junit-bom:${junit5Version}")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+
+    // AssertJ for fluent assertions
+    testImplementation "org.assertj:assertj-core:${assertjVersion}"
+
+    // Testcontainers for integration tests
+    testImplementation platform("org.testcontainers:testcontainers-bom:${testcontainersVersion}")
+    testImplementation "org.testcontainers:junit-jupiter"
+    testImplementation "org.testcontainers:postgresql"
+
+    // Flink test utilities
+    testImplementation "org.apache.flink:flink-test-utils:${flinkVersion}"
+    testImplementation "org.apache.flink:flink-test-utils-junit:${flinkVersion}"
+    testImplementation "org.apache.flink:flink-connector-test-utils:${flinkVersion}"
+
+    // PostgreSQL driver for tests
+    testImplementation "org.postgresql:postgresql:${postgresqlVersion}"
+
+    // Flink runtime (for testing)
+    testImplementation "org.apache.flink:flink-streaming-java:${flinkVersion}"
+    testImplementation "org.apache.flink:flink-runtime:${flinkVersion}"
+    testImplementation "org.apache.flink:flink-runtime:${flinkVersion}:tests"
+    testImplementation "org.apache.flink:flink-streaming-java:${flinkVersion}:tests"
+
+    // Table API for integration tests
+    testImplementation "org.apache.flink:flink-table-api-java-bridge:${flinkVersion}"
+    testImplementation "org.apache.flink:flink-table-planner_${scalaVersion}:${flinkVersion}"
+    testImplementation "org.apache.flink:flink-table-planner_${scalaVersion}:${flinkVersion}:tests"
+    testImplementation "org.apache.flink:flink-table-runtime:${flinkVersion}"
+    testImplementation "org.apache.flink:flink-table-common:${flinkVersion}:tests"
+    testImplementation "org.apache.flink:flink-connector-base:${flinkVersion}:tests"
+
+    // Logging for tests (Log4j 2)
+    testImplementation "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
+    testImplementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"
+    testImplementation "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+
+    // Flink Architecture tests
+    testImplementation "org.apache.flink:flink-architecture-tests-test:${flinkVersion}"
+    testImplementation "org.apache.flink:flink-architecture-tests-production:${flinkVersion}"
+
+    // Dependency convergence - Jackson BOM
+    testImplementation platform("com.fasterxml.jackson:jackson-bom:${jacksonBomVersion}")
+
+    // Dependency convergence - Commons libraries
+    testImplementation "org.apache.commons:commons-compress:${commonsCompressVersion}"
+    testImplementation "org.apache.commons:commons-lang3:${commonsLang3Version}"
+    testImplementation "commons-io:commons-io:${commonsIoVersion}"
+}
+
+// Configure Java compilation
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << '-Xlint:unchecked'
+    options.compilerArgs << '-Xlint:deprecation'
+}
+
+// Configure Scala compilation
+tasks.withType(ScalaCompile) {
+    scalaCompileOptions.encoding = 'UTF-8'
+}
+
+// ============================================
+// Code Quality Tools Configuration
+// ============================================
+
+// Checkstyle - Code style checking (optional, can be disabled if conflicts)
+checkstyle {
+    toolVersion = '9.3'  // Older stable version, better compatibility
+    ignoreFailures = true  // Don't fail build on checkstyle issues
+    maxWarnings = 100
+    // Use custom config if exists
+    configFile = rootProject.file('tools/checkstyle.xml')
+    if (!configFile.exists()) {
+        configFile = null  // Use default rules
+    }
+}
+
+// SpotBugs - Bug pattern detector
+// Simplified configuration - use defaults
+spotbugs {
+    toolVersion = '4.8.3'
+    ignoreFailures = false
+}
+
+// Configure SpotBugs report format
+spotbugsMain {
+    reports {
+        html.required = true
+        xml.required = false
+    }
+}
+
+spotbugsTest {
+    reports {
+        html.required = true
+        xml.required = false
+    }
+}
+
+// Spotless - Code formatting with Google Java Format
+spotless {
+    java {
+        target 'src/*/java/**/*.java'
+
+        // Google Java Format 1.7 (compatible with Java 8)
+        googleJavaFormat('1.7')
+
+        // Import ordering
+        importOrder('java', 'javax', 'org', 'com', '')
+
+        // Basic cleanup
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+
+        // Apache License Header (optional)
+        licenseHeaderFile rootProject.file('tools/license-header.txt'), 'package '
+        // Skip license check if file doesn't exist
+        if (!rootProject.file('tools/license-header.txt').exists()) {
+            licenseHeader ''
+        }
+    }
+
+    // Format Gradle build files
+    groovyGradle {
+        target '*.gradle'
+        greclipse()
+        indentWithSpaces(4)
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+// Make spotlessCheck part of the check task
+check.dependsOn 'spotlessCheck'
+
+// Add helpful tasks
+tasks.register('format') {
+    description = 'Apply code formatting to all files'
+    group = 'formatting'
+    dependsOn 'spotlessApply'
+}
+
+// ============================================
+// Integration Test Configuration
+// ============================================
+// Create a separate source set for integration tests
+// This allows running unit tests and integration tests separately
+
+sourceSets {
+    integrationTest {
+        java {
+            srcDir 'src/integrationTest/java'
+        }
+        resources {
+            srcDir 'src/integrationTest/resources'
+        }
+
+        // Integration tests can access main and test code
+        compileClasspath += sourceSets.main.output + sourceSets.test.output
+        runtimeClasspath += sourceSets.main.output + sourceSets.test.output
+    }
+}
+
+// Handle duplicate resources (e.g., log4j2.xml in both test and integrationTest)
+tasks.named('processIntegrationTestResources') {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+// Integration test dependencies inherit from test
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+// Register integration test task
+tasks.register('integrationTest', Test) {
+    description = 'Runs integration tests'
+    group = 'verification'
+
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+
+    useJUnitPlatform()
+
+    // JVM arguments for tests (required by some Flink tests on Java 9+)
+    if (JavaVersion.current().isJava9Compatible()) {
+        jvmArgs(
+                '--add-opens=java.base/java.util=ALL-UNNAMED',
+                '--add-opens=java.base/java.lang=ALL-UNNAMED'
+                )
+    }
+
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+        showStandardStreams = false
+    }
+
+    // Integration tests typically need more time
+    systemProperty 'junit.jupiter.execution.timeout.default', '10m'
+
+    // Run after unit tests
+    shouldRunAfter test
+}
+
+// Add integration tests to the check task
+check.dependsOn integrationTest
+
+// Configure unit test execution (JUnit 5)
+test {
+    description = 'Runs unit tests'
+
+    useJUnitPlatform()
+
+    // JVM arguments for tests (required by some Flink tests on Java 9+)
+    // Only add --add-opens on Java 9+, as Java 8 doesn't support it
+    if (JavaVersion.current().isJava9Compatible()) {
+        jvmArgs(
+                '--add-opens=java.base/java.util=ALL-UNNAMED',
+                '--add-opens=java.base/java.lang=ALL-UNNAMED'
+                )
+    }
+
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+        showStandardStreams = false
+    }
+
+    // Unit tests should be fast
+    systemProperty 'junit.jupiter.execution.timeout.default', '5m'
+}
+
+// JAR configuration
+jar {
+    manifest {
+        attributes(
+                'Implementation-Title': 'Apache Flink Cloudberry Connector',
+                'Implementation-Version': project.version,
+                'Built-By': System.getProperty('user.name'),
+                'Built-JDK': System.getProperty('java.version')
+                )
+    }
+}
+
+// Publishing configuration
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            artifactId = 'flink-connector-cloudberry'
+
+            pom {
+                name = 'Flink : Connectors : Cloudberry'
+                description = 'Apache Flink Connector for Cloudberry Database'
+                url = 'https://flink.apache.org'
+
+                licenses {
+                    license {
+                        name = 'The Apache Software License, Version 2.0'
+                        url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Clean task
+clean {
+    delete 'out'
+}

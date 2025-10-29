@@ -1,0 +1,12 @@
+/*
+ * Root project settings for Flink Cloudberry Connector
+ */
+
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'flink-connector-cloudberry'
