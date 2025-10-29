@@ -3,3 +3,4 @@
 # Add your factory class here when implemented:
 # org.apache.flink.connector.cloudberry.table.CloudberryDynamicTableFactory
 
+org.apache.flink.connector.cloudberry.table.JdbcDynamicTableFactory

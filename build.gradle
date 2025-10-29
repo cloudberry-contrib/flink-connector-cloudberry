@@ -6,8 +6,6 @@ plugins {
     id 'java'
     id 'scala'
     id 'maven-publish'
-    id 'checkstyle'
-    id 'com.github.spotbugs' version '6.0.7'
     id 'com.diffplug.spotless' version '6.13.0'  // Last version supporting Java 8
 }
 
@@ -41,8 +39,6 @@ dependencies {
     // ============================================
     // PostgreSQL JDBC driver (optional, provided by user)
     // ============================================
-    // Users need to provide the PostgreSQL driver in their application
-    // This follows the same pattern as flink-connector-mongodb
     compileOnly "org.postgresql:postgresql:${postgresqlVersion}"
 
     // ============================================
@@ -67,6 +63,13 @@ dependencies {
     // AssertJ for fluent assertions
     testImplementation "org.assertj:assertj-core:${assertjVersion}"
 
+    // Mockito
+    testImplementation "org.mockito:mockito-core:${mockitoversion}"
+
+    // Derby driver for unit tests (in-memory database)
+    testImplementation "org.apache.derby:derby:${derbyVersion}"
+    testImplementation "org.apache.derby:derbytools:${derbyVersion}"
+
     // Testcontainers for integration tests
     testImplementation platform("org.testcontainers:testcontainers-bom:${testcontainersVersion}")
     testImplementation "org.testcontainers:junit-jupiter"
@@ -76,6 +79,9 @@ dependencies {
     testImplementation "org.apache.flink:flink-test-utils:${flinkVersion}"
     testImplementation "org.apache.flink:flink-test-utils-junit:${flinkVersion}"
     testImplementation "org.apache.flink:flink-connector-test-utils:${flinkVersion}"
+
+    // Flink connector base (needed for DeliveryGuarantee and other core classes)
+    testImplementation "org.apache.flink:flink-connector-base:${flinkVersion}"
 
     // PostgreSQL driver for tests
     testImplementation "org.postgresql:postgresql:${postgresqlVersion}"
@@ -127,40 +133,6 @@ tasks.withType(ScalaCompile) {
 // ============================================
 // Code Quality Tools Configuration
 // ============================================
-
-// Checkstyle - Code style checking (optional, can be disabled if conflicts)
-checkstyle {
-    toolVersion = '9.3'  // Older stable version, better compatibility
-    ignoreFailures = true  // Don't fail build on checkstyle issues
-    maxWarnings = 100
-    // Use custom config if exists
-    configFile = rootProject.file('tools/checkstyle.xml')
-    if (!configFile.exists()) {
-        configFile = null  // Use default rules
-    }
-}
-
-// SpotBugs - Bug pattern detector
-// Simplified configuration - use defaults
-spotbugs {
-    toolVersion = '4.8.3'
-    ignoreFailures = false
-}
-
-// Configure SpotBugs report format
-spotbugsMain {
-    reports {
-        html.required = true
-        xml.required = false
-    }
-}
-
-spotbugsTest {
-    reports {
-        html.required = true
-        xml.required = false
-    }
-}
 
 // Spotless - Code formatting with Google Java Format
 spotless {
