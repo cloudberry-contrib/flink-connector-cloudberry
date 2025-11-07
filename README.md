@@ -2,6 +2,22 @@
 
 This repository contains the official Apache Flink Cloudberry connector.
 
+## Why This Connector?
+
+While the standard [Apache Flink JDBC Connector](https://github.com/apache/flink-connector-jdbc) provides general-purpose database connectivity, this dedicated Cloudberry connector offers significant performance advantages for Cloudberry Database workloads:
+
+**PostgreSQL COPY Protocol for High-Performance Ingestion**
+
+In append mode, this connector leverages PostgreSQL's native COPY protocol for bulk data loading, delivering substantially better throughput compared to traditional JDBC batch processing.
+
+## Notes
+
+### Exactly-Once Semantics Not Supported
+
+**This connector does not support Flink's exactly-once delivery guarantee.**
+
+In Flink's architecture, achieving exactly-once semantics requires the external database to support XA Transactions. However, Cloudberry Database does not support XA transactions(2 phase commit coordination of database transactions with external transactions), which makes exactly-once semantics technically infeasible.
+
 ## Apache Flink
 
 Apache Flink is an open source stream processing framework with powerful stream- and batch-processing capabilities.
@@ -266,3 +282,7 @@ This project is licensed under the Apache License 2.0 - see the LICENSE file for
 ## About
 
 Apache Flink is an open source project of The Apache Software Foundation (ASF).
+
+## Acknowledgments
+
+This project is based on [Apache Flink JDBC Connector](https://github.com/apache/flink-connector-jdbc). We thank the Apache Flink community for their excellent work.
