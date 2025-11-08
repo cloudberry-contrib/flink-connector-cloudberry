@@ -10,13 +10,17 @@ While the standard [Apache Flink JDBC Connector](https://github.com/apache/flink
 
 In append mode, this connector leverages PostgreSQL's native COPY protocol for bulk data loading, delivering substantially better throughput compared to traditional JDBC batch processing.
 
-## Notes
+## Limitations
+
+### Sink-Only Operation
+
+**This connector currently supports only Sink (data write) operations. Source (data read) operations are not supported.**
 
 ### Exactly-Once Semantics Not Supported
 
 **This connector does not support Flink's exactly-once delivery guarantee.**
 
-In Flink's architecture, achieving exactly-once semantics requires the external database to support XA Transactions. However, Cloudberry Database does not support XA transactions(2 phase commit coordination of database transactions with external transactions), which makes exactly-once semantics technically infeasible.
+In Flink's architecture, achieving exactly-once semantics typically requires the external database to support XA Transactions. However, Cloudberry Database does not currently support XA transactions (2-phase commit coordination of database transactions with external transactions), which means this connector cannot provide exactly-once semantics currently.
 
 ## Apache Flink
 
@@ -73,7 +77,7 @@ The resulting jars can be found in the `build/libs` directory.
     <dependency>
         <groupId>org.apache.flink</groupId>
         <artifactId>flink-connector-cloudberry</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>0.5.0</version>
     </dependency>
     
     <!-- PostgreSQL JDBC Driver (Required!) -->
@@ -90,7 +94,7 @@ The resulting jars can be found in the `build/libs` directory.
 
 ```groovy
 dependencies {
-    implementation 'org.apache.flink:flink-connector-cloudberry:1.0.0-SNAPSHOT'
+    implementation 'org.apache.flink:flink-connector-cloudberry:0.5.0'
     runtimeOnly 'org.postgresql:postgresql:42.7.3'  // Required!
 }
 ```
@@ -189,9 +193,7 @@ CREATE TABLE stats_sink (
   'url' = 'jdbc:postgresql://localhost:5432/testdb',
   'username' = 'username',
   'password' = 'password',
-  'table-name' = 'user_statistics',
-  'sink.buffer-flush.max-rows' = '2',
-  'sink.buffer-flush.interval' = '0'
+  'table-name' = 'user_statistics'
 );
 
 ```
@@ -214,9 +216,7 @@ CREATE TABLE bulk_orders_sink (
   'username' = 'username',
   'password' = 'password',
   'table-name' = 'bulk_orders',
-  'sink.use-copy-protocol' = 'true',        -- Enable COPY protocol
-  'sink.buffer-flush.max-rows' = '100',     -- Flush after 100 rows
-  'sink.buffer-flush.interval' = '1s'       -- Or flush every 1 second
+  'sink.use-copy-protocol' = 'true'        -- Enable COPY protocol
 );
 
 ```
@@ -235,9 +235,7 @@ CREATE TABLE sales_sink (
   'url' = 'jdbc:postgresql://localhost:5432/testdb',
   'username' = 'username',
   'password' = 'password',
-  'table-name' = 'product_sales',
-  'sink.buffer-flush.max-rows' = '3',
-  'sink.buffer-flush.interval' = '300ms'
+  'table-name' = 'product_sales'
 );
 
 ```
