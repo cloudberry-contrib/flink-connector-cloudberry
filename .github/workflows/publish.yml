@@ -1,0 +1,82 @@
+# This workflow will build a Java package using Gradle, run tests, and publish it to GitHub Packages when a release is created
+# For more information see: https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#Publishing-using-gradle
+
+name: Publish Package
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build-and-publish:
+    name: Build and Publish on JDK 11
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    # Checkout the repository
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # Validate release tag format
+    - name: Validate release tag
+      run: |
+        TAG_NAME="${GITHUB_REF#refs/tags/}"
+        echo "Release tag: $TAG_NAME"
+        
+        # Check if tag matches semantic versioning pattern (e.g., v0.6.0 or 0.6.0)
+        if [[ ! "$TAG_NAME" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
+          echo "Error: Tag '$TAG_NAME' does not follow semantic versioning (e.g., v0.6.0)"
+          exit 1
+        fi
+        
+        echo "Tag validation passed!"
+
+    # Set release version in gradle.properties
+    - name: Set release version
+      run: |
+        TAG_NAME="${GITHUB_REF#refs/tags/}"
+        # Remove 'v' prefix if present
+        VERSION="${TAG_NAME#v}"
+        echo "Setting version to: $VERSION"
+        
+        # Update version in gradle.properties
+        sed -i "s/^version=.*/version=$VERSION/" gradle.properties
+        
+        # Verify the change
+        echo "Updated gradle.properties:"
+        grep "^version=" gradle.properties
+
+    # Set up JDK (using JDK 11 which is compatible with Java 8 target)
+    - name: Set up JDK 11
+      uses: actions/setup-java@v4
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+
+    # Setup Gradle
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
+
+    # Build the project, which includes formatting checks, tests, and JAR creation.
+    - name: Build with Gradle
+      run: ./gradlew build --no-daemon
+
+    # Upload build artifact
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: flink-connector-cloudberry
+        path: build/libs/*.jar
+
+    # Publish to GitHub Packages (only on release)
+    - name: Publish to GitHub Packages
+      run: ./gradlew publish --no-daemon
+      env:
+        GITHUB_ACTOR: ${{ github.actor }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+

@@ -64,7 +64,7 @@ dependencies {
     testImplementation "org.assertj:assertj-core:${assertjVersion}"
 
     // Mockito
-    testImplementation "org.mockito:mockito-core:${mockitoversion}"
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
 
     // Derby driver for unit tests (in-memory database)
     testImplementation "org.apache.derby:derby:${derbyVersion}"
@@ -151,9 +151,9 @@ spotless {
         endWithNewline()
 
         // Apache License Header (optional)
-        licenseHeaderFile rootProject.file('tools/license-header.txt'), 'package '
-        // Skip license check if file doesn't exist
-        if (!rootProject.file('tools/license-header.txt').exists()) {
+        if (rootProject.file('tools/license-header.txt').exists()) {
+            licenseHeaderFile rootProject.file('tools/license-header.txt'), 'package '
+        } else {
             licenseHeader ''
         }
     }
@@ -291,7 +291,7 @@ publishing {
             pom {
                 name = 'Flink : Connectors : Cloudberry'
                 description = 'Apache Flink Connector for Cloudberry Database'
-                url = 'https://flink.apache.org'
+                url = "https://github.com/${System.getenv("GITHUB_REPOSITORY") ?: "cloudberry-contrib/flink-connector-cloudberry"}"
 
                 licenses {
                     license {
@@ -299,6 +299,33 @@ publishing {
                         url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
                     }
                 }
+
+                scm {
+                    connection = "scm:git:git://github.com/${System.getenv("GITHUB_REPOSITORY") ?: "cloudberry-contrib/flink-connector-cloudberry"}.git"
+                    developerConnection = "scm:git:ssh://github.com/${System.getenv("GITHUB_REPOSITORY") ?: "cloudberry-contrib/flink-connector-cloudberry"}.git"
+                    url = "https://github.com/${System.getenv("GITHUB_REPOSITORY") ?: "cloudberry-contrib/flink-connector-cloudberry"}"
+                }
+
+                developers {
+                    developer {
+                        id = 'cloudberry-contrib'
+                        name = 'Cloudberry Contrib Community'
+                        email = 'dev@cloudberry.apache.org'
+                        organization = 'Cloudberry Contrib'
+                        organizationUrl = 'https://github.com/cloudberry-contrib'
+                    }
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/${System.getenv("GITHUB_REPOSITORY") ?: "cloudberry-contrib/flink-connector-cloudberry"}")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR") ?: System.getenv("USERNAME")
+                password = System.getenv("GITHUB_TOKEN") ?: System.getenv("TOKEN")
             }
         }
     }

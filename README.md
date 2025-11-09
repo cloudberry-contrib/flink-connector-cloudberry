@@ -22,18 +22,6 @@ In append mode, this connector leverages PostgreSQL's native COPY protocol for b
 
 In Flink's architecture, achieving exactly-once semantics typically requires the external database to support XA Transactions. However, Cloudberry Database does not currently support XA transactions (2-phase commit coordination of database transactions with external transactions), which means this connector cannot provide exactly-once semantics currently.
 
-## Apache Flink
-
-Apache Flink is an open source stream processing framework with powerful stream- and batch-processing capabilities.
-
-Learn more about Flink at [https://flink.apache.org/](https://flink.apache.org/)
-
-## Cloudberry Database
-
-Cloudberry Database is an open-source, next-generation unified analytics warehouse built on PostgreSQL. It provides powerful MPP (Massively Parallel Processing) capabilities for large-scale data analytics.
-
-Learn more about Cloudberry Database at [https://cloudberry.apache.org/](https://cloudberry.apache.org/)
-
 ## Building the Apache Flink Cloudberry Connector from Source
 
 Prerequisites:
@@ -249,7 +237,6 @@ CREATE TABLE sales_sink (
 | `table-name` | Yes | - | String | Target table name in the database |
 | `username` | No | - | String | Database username |
 | `password` | No | - | String | Database password |
-| `driver` | No | Auto-detected | String | JDBC driver class name |
 | `sink.use-copy-protocol` | No | false | Boolean | Enable PostgreSQL COPY protocol for high-performance bulk loading |
 | `sink.buffer-flush.max-rows` | No | 5000 | Integer | Maximum number of rows to buffer before flushing |
 | `sink.buffer-flush.interval` | No | 0 | Duration | Flush interval (e.g., '1s', '500ms'). 0 means no interval-based flush |
@@ -262,7 +249,6 @@ CREATE TABLE sales_sink (
 2. **Tune buffer settings** - adjust `sink.buffer-flush.max-rows` and `sink.buffer-flush.interval` based on your throughput requirements
 3. **Use upsert mode wisely** - only define PRIMARY KEY when you need update semantics, as it adds overhead
 4. **Batch mode for analytics** - use batch mode (`EnvironmentSettings.inBatchMode()`) for offline ETL jobs
-5. **Connection pooling** - the connector automatically manages connection pooling for optimal performance
 
 ## Documentation
 
