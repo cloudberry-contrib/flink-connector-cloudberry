@@ -26,7 +26,7 @@ In Flink's architecture, achieving exactly-once semantics typically requires the
 
 Prerequisites:
 
-* Unix-like environment (we use Linux, Mac OS X)
+* Unix-like environment (we use Linux, Mac OS)
 * Git
 * Java 8 (Gradle wrapper will be downloaded automatically)
 
@@ -116,7 +116,6 @@ Use DataStream API when you need fine-grained control over data processing:
 
 ```java
 StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-env.setParallelism(1);
 
 // Create data stream and write to Cloudberry
 env.fromElements(books)

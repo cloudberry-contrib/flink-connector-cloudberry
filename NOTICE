@@ -1,0 +1,11 @@
+Apache Flink Cloudberry Connector
+Copyright 2025 Cloudberry Contributors
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/).
+
+This project contains code derived from Apache Flink JDBC Connector
+(https://github.com/apache/flink-connector-jdbc)
+Copyright The Apache Software Foundation
+
+Licensed under the Apache License, Version 2.0
