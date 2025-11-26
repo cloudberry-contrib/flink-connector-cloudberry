@@ -83,9 +83,12 @@ public class CopyProtocolBatchWriter implements BatchWriter {
 
   @Override
   public void close() throws Exception {
-    copyInOperation.endCopy();
-    if (copyInOperation.isActive()) {
-      copyInOperation.cancelCopy();
+    try {
+      copyInOperation.endCopy();
+    } finally {
+      if (copyInOperation.isActive()) {
+        copyInOperation.cancelCopy();
+      }
     }
   }
 
