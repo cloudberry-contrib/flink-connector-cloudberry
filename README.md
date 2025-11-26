@@ -237,10 +237,10 @@ CREATE TABLE sales_sink (
 | `username` | No | - | String | Database username |
 | `password` | No | - | String | Database password |
 | `sink.use-copy-protocol` | No | false | Boolean | Enable PostgreSQL COPY protocol for high-performance bulk loading |
-| `sink.buffer-flush.max-rows` | No | 5000 | Integer | Maximum number of rows to buffer before flushing |
-| `sink.buffer-flush.interval` | No | 0 | Duration | Flush interval (e.g., '1s', '500ms'). 0 means no interval-based flush |
+| `sink.buffer-flush.max-rows` | No | 1000 | Integer | Maximum number of rows to buffer before flushing |
+| `sink.buffer-flush.interval` | No | 5s | Duration | Flush interval (e.g., '1s', '500ms') |
 | `sink.max-retries` | No | 3 | Integer | Maximum number of retry attempts on failure |
-| `connection.max-retry-timeout` | No | 60s | Duration | Maximum timeout for retry attempts |
+| `sink.retry.interval` | No | 1s | Duration | Time interval between retry attempts |
 
 ## Performance Tips
 
@@ -261,10 +261,6 @@ This is an active open-source project. We are always open to people who want to 
 ## License
 
 This project is licensed under the Apache License 2.0 - see the LICENSE file for details.
-
-## About
-
-Apache Flink is an open source project of The Apache Software Foundation (ASF).
 
 ## Acknowledgments
 
